@@ -161,14 +161,14 @@ for my $element ( keys %species ) {
 					$passed_side_test = 1;
 				}
 
-#				if ($passed_tir_test and $passed_side_test) {
+				if ($passed_tir_test and $passed_side_test) {
 					my $insertion_data1 = "$data[0]\t$data[7]\t$data[1]\t$data[2]\t$data[8]\t$data[3]\t$location1";
 					my $insertion_data2 = "$data2[0]\t$data2[7]\t$data2[1]\t$data2[2]\t$data2[8]\t$data2[3]\t$location2";
 					$insert_data{$insertion_data1} = "$data[1]\t$data[2]";
 					$insert_data{$insertion_data2} = "$data2[1]\t$data2[2]";
 					$sequence_data{$te_sequence1} = 0;
 					$sequence_data{$te_sequence2} = 0;
-#				}
+				}
 			}			
 		}
 	}
