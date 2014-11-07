@@ -116,7 +116,7 @@ foreach my $seqname (keys %sequence) {
 						my $adjusted_right_pos = $local_fpos[$l]; # placing the right postion at the end of the TSD
 						my $loc = "$seqname\t" . $adjusted_left_pos . "\t" . $adjusted_right_pos . "\t" . $config{tsdlen} . "TSD_" . $config{itrlen} . "TIR";
 						$hitloc{$loc} = $differences;
-print "$loc\n";
+#print "$loc\n";
 #print "$seqname\t$adjusted_left_pos\t$local_fseq[$k]\t$adjusted_right_pos\t$local_rseq[$l]\t$differences\t$TSD\n";	
 					}
 				}
