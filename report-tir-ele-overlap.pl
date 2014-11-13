@@ -214,7 +214,7 @@ sub blastseq {
 	# execute the blast
 #`cp $sequence_file temp`;
 #print "$sequence_file\n"; exit;
-	`./fastx36 -E 1 $sequence_file $config{dbte} > $blast_file`;
+	`fastx36 -E 1 $sequence_file $config{dbte} > $blast_file`;
 #	unless ($blast_file) {
 #		die "blast did not work, check that fastx36 is installed\n";
 #	}
