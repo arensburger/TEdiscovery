@@ -191,7 +191,7 @@ for my $element (keys %species ) { # scroll throught elements
 			my ($hitname, $evalue, $overlap) = blastseq($data[7]);
 			my @data2 = split("\n", $data[7]);
 			my $element_length = length($data2[1]);
-			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_lengt\t$data2[0]\t$data2[1]\n"; #all but location
+			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_length\t$data2[0]\t$data2[1]\n"; #all but location
 #			print OUTPUT "$key\n";
 		}
 #		foreach my $key (keys %sequence_data) {
