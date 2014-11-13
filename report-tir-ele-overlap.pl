@@ -87,7 +87,7 @@ foreach my $line (@lines) {
 
 ### report data on each element ###
 
-my %genome = genometohash($config{genome});
+my %genome = uc_genometohash($config{genome}); # get genome and convert all letters to uppercase
 
 for my $element (keys %species ) { # scroll throught elements
 	my @element_data; # holds all the elements for this species of TE
@@ -174,7 +174,7 @@ for my $element (keys %species ) { # scroll throught elements
 				}
 
 				if ($passed_tir_test and $passed_side_test) {
-					my $insertion_data1 = "$data[0]\t$data[7]\t$data[1]\t$data[2]\t$data[8]\t$data[3]\t$location1]\t$te_sequence1";
+					my $insertion_data1 = "$data[0]\t$data[7]\t$data[1]\t$data[2]\t$data[8]\t$data[3]\t$location1\t$te_sequence1";
 					my $insertion_data2 = "$data2[0]\t$data2[7]\t$data2[1]\t$data2[2]\t$data2[8]\t$data2[3]\t$location2\t$te_sequence2";
 					$insert_data{$insertion_data1} = "$data[1]\t$data[2]";
 					$insert_data{$insertion_data2} = "$data2[1]\t$data2[2]";
@@ -190,7 +190,8 @@ for my $element (keys %species ) { # scroll throught elements
 			my @data = split("\t", $key);
 			my ($hitname, $evalue, $overlap) = blastseq($data[7]);
 			my @data2 = split("\n", $data[7]);
-			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$data2[0]\t$data2[1]\n"; #all but location
+			my $element_length = length($data2[1]);
+			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_lengt\t$data2[0]\t$data2[1]\n"; #all but location
 #			print OUTPUT "$key\n";
 		}
 #		foreach my $key (keys %sequence_data) {
@@ -270,7 +271,7 @@ Options :
 }
 
 #load a genome into a hash
-sub genometohash {
+sub uc_genometohash {
 	use strict;
 	(my $filename) = @_;
 	my %genome; #hash with the genome
@@ -284,7 +285,7 @@ sub genometohash {
 #				exit;
 			}
 			else {
-				$genome{$title} = $seq;
+				$genome{$title} = uc($seq);
 			}
 			#chomp $line;
 			my @data = split(" ", $line);
@@ -304,7 +305,7 @@ sub genometohash {
 			$seq .= $line;
 		}
 	} 
-	$genome{$title} = $seq;
+	$genome{$title} = uc($seq);
 
 	return (%genome);
 }
