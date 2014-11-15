@@ -216,7 +216,7 @@ sub blastseq {
 	close SEQ;
 
 	# execute the blast
-	`./fastx36 -E 1 $sequence_file $config{dbte} > $blast_file`;
+	`fastx36 -E 1 $sequence_file $config{dbte} > $blast_file`;
 
 	# interpret the blast results
 	my $tename;
@@ -348,7 +348,7 @@ sub tir_length {
 	my $miss = 0; # number of mismatches
 
 	my $i = 0;
-	while (($i <= $MAX_TIR_LENGTH) and ($miss <= ($MAX_MISSMATCH+1))) {
+	while (($i <= $MAX_TIR_LENGTH) and ($miss < ($MAX_MISSMATCH+1))) {
 		my $left_nuc = substr($seq, $i, 1);
 		my $right_nuc = substr($seq, -$i - 1, 1);
 		unless ($left_nuc eq rc($right_nuc)) {
