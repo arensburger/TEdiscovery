@@ -22,6 +22,7 @@ if (!exists $config{genome})         {printUsage();}
 if (!exists $config{dbte})         {$config{dbte} = "./TEdiscovery/repbase_classII.fa";}
 if (!exists $config{out}) {$config{out} = "out";}
 open (OUTPUT, ">$config{out}") or die "cannot open output file $config{out}\n";
+print OUTPUT "side LEFT\tTSD LEFT\tTIR LEFT\tTIR RIGHT\tTSD RIGHT\tside RIGHT\tBLAST name\tBLAST evalue\tBLAST overlap\tlength\tTIR length\tORF length\tsequence NAME\tsequence string\n";
 
 ## Main program ##
 
@@ -91,7 +92,6 @@ my %genome = uc_genometohash($config{genome}); # get genome and convert all lett
 
 for my $element (keys %species ) { # scroll throught elements
 	my @element_data; # holds all the elements for this species of TE
-#print "$element:\n";
 	for my $i ( 0 .. $#{ $species{$element} } ) {
 		my @data = split("\t", $species{$element}[$i]);
 
@@ -192,15 +192,11 @@ for my $element (keys %species ) { # scroll throught elements
 			my @data2 = split("\n", $data[7]);
 			my $element_length = length($data2[1]);
 			my $tir_length = tir_length($data2[1]);
-#print "$tir_length\n";
-			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_length\t$tir_length\t$data2[0]\t$data2[1]\n"; #all but location
-#			print OUTPUT "$key\n";
-#print "$data[0]\n";
+			my $orf_lengths = size_longest_orfs($data2[1]);
+
+			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_length\t$tir_length\t$orf_lengths\t$data2[0]\t$data2[1]\n"; #all but location
+
 		}
-#		foreach my $key (keys %sequence_data) {
-#			print "$key\n";
-#		}
-#		print "\n";
 	}
 }
 
@@ -365,6 +361,42 @@ sub tir_length {
 	else {
 		return($i);
 	}
+}
+
+#get the longest ORFs
+sub size_longest_orfs {
+	(my $seq) = @_;
+
+	my $NUMBER_OF_ORFs = 3; # number of longest orfs 
+
+	# put the sequence into a temp file	
+	my $orf_input_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fa' );
+	open (ORF, ">$orf_input_file") or die "cannot open file for writting $orf_input_file\n";
+	print ORF ">temp\n$seq";
+
+	# run the emboss getorf program
+	my $orf_output_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fa' );
+	`getorf -sequence $orf_input_file -outseq $orf_output_file`;
+
+	# interpret the data in the output file
+	my @orflengths;
+	my %orfs = uc_genometohash($orf_output_file);
+	foreach my $orf_title (keys %orfs) {
+		$orfs{$orf_title} =~ s/X//g;
+		push @orflengths, (length $orfs{$orf_title});	
+	} 
+
+	#create the return text
+	my @sorted_length = sort {$b <=> $a} @orflengths;
+	my $return_text;
+	for (my $i=0; $i < $NUMBER_OF_ORFs; $i++) {
+		$return_text .= $sorted_length[$i] . " /";
+	}
+	chop $return_text;
+	chop $return_text;
+
+	return ($return_text);
+	
 }
 exit;
 
