@@ -357,7 +357,9 @@ sub tir_length {
 		$i++;
 	}
 
-	if ($i == $MAX_TIR_LENGTH) {
+	$i--; # this is to account for that last $i++
+
+	if ($i >= $MAX_TIR_LENGTH) {
 		return(">=$i");
 	}
 	else {
