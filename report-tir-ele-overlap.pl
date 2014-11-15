@@ -185,14 +185,17 @@ for my $element (keys %species ) { # scroll throught elements
 
 	## Output the data if any
 	if (%insert_data) {
-		print OUTPUT "********\n";
+		print OUTPUT "\n";
 		foreach my $key (sort {$insert_data{$a} cmp $insert_data{$b} } keys %insert_data) {
 			my @data = split("\t", $key);
 			my ($hitname, $evalue, $overlap) = blastseq($data[7]);
 			my @data2 = split("\n", $data[7]);
 			my $element_length = length($data2[1]);
-			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_length\t$data2[0]\t$data2[1]\n"; #all but location
+			my $tir_length = tir_length($data2[1]);
+#print "$tir_length\n";
+			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_length\t$tir_length\t$data2[0]\t$data2[1]\n"; #all but location
 #			print OUTPUT "$key\n";
+#print "$data[0]\n";
 		}
 #		foreach my $key (keys %sequence_data) {
 #			print "$key\n";
@@ -213,13 +216,8 @@ sub blastseq {
 	close SEQ;
 
 	# execute the blast
-#`cp $sequence_file temp`;
-#print "$sequence_file\n"; exit;
-	`fastx36 -E 1 $sequence_file $config{dbte} > $blast_file`;
-#	unless ($blast_file) {
-#		die "blast did not work, check that fastx36 is installed\n";
-#	}
-`cp $blast_file temp`; 
+	`./fastx36 -E 1 $sequence_file $config{dbte} > $blast_file`;
+
 	# interpret the blast results
 	my $tename;
 	my $te_length;
@@ -333,6 +331,38 @@ sub pdistance {
 
 	my $pdistance = $differences/(length $seq1);
 	return($pdistance);
+}
+
+#take a te sequence file and returns length of TIRs
+sub tir_length {
+	(my $seq) = @_;
+	
+	my $MAX_TIR_LENGTH = 30; # maximum tir length
+	my $MAX_MISSMATCH = 2; # maximum number of mismatches
+
+ 	# check that the sequence is long enough	
+	if ((length $seq) < (2*$MAX_TIR_LENGTH)) {
+		return ("too short");
+	}
+	
+	my $miss = 0; # number of mismatches
+
+	my $i = 0;
+	while (($i <= $MAX_TIR_LENGTH) and ($miss <= ($MAX_MISSMATCH+1))) {
+		my $left_nuc = substr($seq, $i, 1);
+		my $right_nuc = substr($seq, -$i - 1, 1);
+		unless ($left_nuc eq rc($right_nuc)) {
+			$miss++;
+		}
+		$i++;
+	}
+
+	if ($i == $MAX_TIR_LENGTH) {
+		return(">=$i");
+	}
+	else {
+		return($i);
+	}
 }
 exit;
 
