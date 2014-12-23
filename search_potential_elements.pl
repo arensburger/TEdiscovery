@@ -11,34 +11,66 @@ my %config;
 GetOptions(\%config,
 	'tedb=s', # TE database
 	'potele=s', # potential elements
+	'genome=s', # genome sequence
+	'dbgen=s', # genome blast db
 	'out=s',
 );
 
 ##> Check if no mandatory parameter is missing and set defaults
 if (!exists $config{tedb})         {printUsage();}
 if (!exists $config{potele})         {printUsage();}
+if (!exists $config{genome})         {printUsage();}
+if (!exists $config{dbgen})         {printUsage();}
 if (!exists $config{out}) {$config{out} = "out";}
 open (OUTPUT, ">$config{out}") or die "cannot open output file $config{out}\n";
-
-
-#my $TE_database = $ARGV[0]; # fasta file with known TE amino acid sequences
-#my $possible_element_file = $ARGV[1]; #fasta file of proposed elements
-
-# create temporary blast database
-#my $tedb_dir = File::Temp->newdir(); # TE database directory
-#`makeblastdb -in $config{tedb} -dbtype prot -out $tedb_dir/TEdb`;
 
 # use fasta on the input file and store list of hits in %element_names
 my $search_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fst' ); # fasta output
 my $search_result = `fasty36 -E 0.5 -T 12 -b 1 -m 8 $config{potele} $config{tedb} > $search_file`;
-my $output_name = $config{potele} . ".fasty";
-`cp $search_file $output_name`;
 my %element_names;
 open (INPUT, $search_file) or die;
 while (my $line = <INPUT>) {
 	my @data = split " ", $line;
-	$element_names{$data[0]} = 0;
+	my $evalue = @data[-2];
+	my $dbhitname = @data[1];
+	$element_names{$data[0]} = "$dbhitname\t$evalue";
 }
+close INPUT;
+
+# create preliminary report
+my $filename = "prelim-report.xls";
+open (PRELIMOUT, ">$filename") or die "cannot open file $filename for writting\n";
+print PRELIMOUT "Element name\tHit name\tevalue\tsequence\n";
+my %genomeseq = genometohash($config{genome});
+my $blast_output = File::Temp->new( UNLINK => 1, SUFFIX => '.blst' ); # blast output
+`blastn -outfmt 6 -num_alignments 1 -db $config{dbgen} -query $config{potele} -out $blast_output`;
+open (INPUT, $blast_output) or die "cannot open file $blast_output\n";
+my %positions;
+while (my $line = <INPUT>) {
+	my @data = split(" ", $line);
+	my $name = $data[0];
+	my $scaffold = $data[1];
+	my $b1 = $data[8];
+	my $b2 = $data[9];
+	unless (exists $positions{$name}) {
+		$positions{$name} = "$scaffold\t$b1\t$b2"; #holds the positions of the hits on the genome
+	}
+}
+foreach my $element (keys %positions) {
+	my $sequence;
+	my @data = split(" ", $positions{$element});
+	if ($data[1] < $data[2]) {
+		$sequence = uc(substr($genomeseq{$data[0]}, $data[1], ($data[2] - $data[1])));
+	}
+	if ($data[2] < $data[1]) {
+		$sequence = substr($genomeseq{$data[0]}, $data[2], ($data[1] - $data[2]));
+		$sequence = uc(rc($sequence));
+	}
+
+	my @data2 = split (" ", $element_names{$element});
+	print PRELIMOUT "$element\t$data2[0]\t$data2[1]\t$sequence\n";
+}
+close PRELIMOUT;
 
 #print the those sequences that matched
 my %proposed_elements = genometohash($config{potele});
@@ -92,10 +124,20 @@ sub genometohash {
 sub printUsage{
 
 print STDOUT "DESCRIPTION: This program takes a FASTA formated file of potential element and compares it to a database of known elements\n";
-print STDOUT "USAGE : perl search_potential_elements.pl -t \"known TE database, fasta file\" -p \"potential elements, fasta file\" -o \"output file\"
+print STDOUT "USAGE : perl search_potential_elements.pl -t \"known TE database, fasta file\" -p \"potential elements, fasta file\" -g \"genome sequence\" -o \"output file\"
 Options : 
     -t | tedb		Database of known elements, fasta formated (Mandatory)
     -p | potele		List of potential elements, fasta formated (Mandatory)
+    -g | genome		genome sequence, fasta formated (Mandatory)
+    -d | dbgen		genome blast database (Mandatory)
     -o | out   		Name of ouput file (default \"out\")\n";
     exit;
 }
+
+sub rc {
+    my ($sequence) = @_;
+    $sequence = reverse $sequence;
+    $sequence =~ tr/ACGTRYMKSWacgtrymksw/TGCAYRKMWStgcayrkmws/;
+    return ($sequence);
+}
+
