@@ -18,6 +18,7 @@ if (!exists $config{genome})         {printUsage();}
 if (!exists $config{tsdlen})         {printUsage();}
 if (!exists $config{itrlen})         {printUsage();}
 if (!exists $config{out}) {$config{out} = "out";}
+open (OUTPUT, ">$config{out}") or die "cannot create file $config{out}\n";
 
 #my $TSD_length = 4;
 #my $TIR_LENGTH = 11;
@@ -128,7 +129,7 @@ foreach my $seqname (keys %sequence) {
 
 #print results
 foreach my $key (keys %hitloc) {
-	print "$key\n";
+	print OUTPUT "$key\n";
 }	
 
 
