@@ -43,6 +43,7 @@ open (PRELIMOUT, ">$filename") or die "cannot open file $filename for writting\n
 print PRELIMOUT "Element name\tHit name\tevalue\tsequence\n";
 my %genomeseq = genometohash($config{genome});
 my $blast_output = File::Temp->new( UNLINK => 1, SUFFIX => '.blst' ); # blast output
+`mkdir motif_files`;
 `blastn -outfmt 6 -num_alignments 1 -db $config{dbgen} -query $config{potele} -out $blast_output`;
 open (INPUT, $blast_output) or die "cannot open file $blast_output\n";
 my %positions;
@@ -57,6 +58,8 @@ while (my $line = <INPUT>) {
 	}
 }
 foreach my $element (keys %positions) {
+
+	# getting the sequence from the genome
 	my $sequence;
 	my @data = split(" ", $positions{$element});
 	if ($data[1] < $data[2]) {
@@ -66,6 +69,9 @@ foreach my $element (keys %positions) {
 		$sequence = substr($genomeseq{$data[0]}, $data[2], ($data[1] - $data[2]));
 		$sequence = uc(rc($sequence));
 	}
+
+	# finding TE motifs
+	my $number_of_motifs = findmotifs($sequence);
 
 	my @data2 = split (" ", $element_names{$element});
 	print PRELIMOUT "$element\t$data2[0]\t$data2[1]\t$sequence\n";
@@ -139,5 +145,29 @@ sub rc {
     $sequence = reverse $sequence;
     $sequence =~ tr/ACGTRYMKSWacgtrymksw/TGCAYRKMWStgcayrkmws/;
     return ($sequence);
+}
+
+sub findmotifs {
+	my ($sequence) = @_;
+	my $pfamREPET="/home/arensburger/db/repet/ProfilesBankForREPET_Pfam26.0_GypsyDB.hmm";
+	
+	my $sequence_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # contains sequence to translate
+	my $translated_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # translated file
+	open (OUTPUT, ">$sequence_file") or die;
+	print OUTPUT ">temp\n";
+	print OUPTUT "sequence\n";
+	`transeq $sequence_file $translated_file -frame=6 2>&1`; # translate the DNA into 6 frames
+	my $hmm_output = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # translated file
+	`hmmscan --tblout $hmm_output $pfamREPET $translated_file`;
+	my $number_of_hits =  `grep -v "^#" $hmm_output -c`;
+	chomp $number_of_hits;
+	if ($number_of_hits) {
+		my $output_file = $name . "-hmmprofile.txt\n";
+		`cp $hmm_output motif_files/$output_file`;
+	}
+	return($number_of_hits);
+
+
+
 }
 
