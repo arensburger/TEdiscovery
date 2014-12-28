@@ -71,7 +71,8 @@ foreach my $element (keys %positions) {
 	}
 
 	# finding TE motifs
-	my $number_of_motifs = findmotifs($sequence);
+	my @data3 = split("#", $element);
+	my $number_of_motifs = findmotifs($data3[0], $sequence);
 
 	my @data2 = split (" ", $element_names{$element});
 	print PRELIMOUT "$element\t$data2[0]\t$data2[1]\t$sequence\n";
@@ -148,7 +149,7 @@ sub rc {
 }
 
 sub findmotifs {
-	my ($sequence) = @_;
+	my ($name, $sequence) = @_;
 	my $pfamREPET="/home/arensburger/db/repet/ProfilesBankForREPET_Pfam26.0_GypsyDB.hmm";
 	
 	my $sequence_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # contains sequence to translate
