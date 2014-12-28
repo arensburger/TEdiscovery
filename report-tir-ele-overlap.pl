@@ -193,7 +193,7 @@ for my $element (keys %species ) { # scroll throught elements
 			my $element_length = length($data2[1]);
 			my $tir_length = tir_length($data2[1]);
 			my $orf_lengths = size_longest_orfs($data2[1]);
-
+print "element is $element\n";
 			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_length\t$tir_length\t$orf_lengths\t$data2[0]\t$data2[1]\n"; #all but location
 
 		}
@@ -212,7 +212,7 @@ sub blastseq {
 	close SEQ;
 
 	# execute the blast
-	`fastx36 -E 1 $sequence_file $config{dbte} > $blast_file`;
+	`fasty36 -E 1 $sequence_file $config{dbte} > $blast_file`;
 
 	# interpret the blast results
 	my $tename;
