@@ -36,6 +36,8 @@ unless (@lines) { # checking that something got put into the array
 
 ### read through the file ###
 my %seen; #to prevent duplications
+my %element_list; # list of all the elements that are outputed
+
 foreach my $line (@lines) {
 	my @data = split " ", $line;
 	my $scaffold = $data[0];
@@ -193,12 +195,18 @@ for my $element (keys %species ) { # scroll throught elements
 			my $element_length = length($data2[1]);
 			my $tir_length = tir_length($data2[1]);
 			my $orf_lengths = size_longest_orfs($data2[1]);
-print "element is $element\n";
+			$element_list{$element}=0;
 			print OUTPUT "$data[0]\t$data[1]\t$data[2]\t$data[3]\t$data[4]\t$data[5]\t$hitname\t$evalue\t$overlap\t$element_length\t$tir_length\t$orf_lengths\t$data2[0]\t$data2[1]\n"; #all but location
 
 		}
 	}
 }
+#print the elements that have been reported
+foreach my $key (keys %element_list) {
+	print $key, "\n";
+}
+exit;
+
 
 # takes a sequence as input, does a blast search against a known db of TE proteins returns data about the hit 
 sub blastseq {
