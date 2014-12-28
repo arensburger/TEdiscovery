@@ -156,7 +156,7 @@ sub findmotifs {
 	my $translated_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # translated file
 	open (OUTPUT, ">$sequence_file") or die;
 	print OUTPUT ">temp\n";
-	print OUPTUT "sequence\n";
+	print OUTPUT "$sequence\n";
 	`transeq $sequence_file $translated_file -frame=6 2>&1`; # translate the DNA into 6 frames
 	my $hmm_output = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # translated file
 	`hmmscan --tblout $hmm_output $pfamREPET $translated_file`;
