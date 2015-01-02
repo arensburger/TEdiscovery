@@ -82,6 +82,7 @@ close PRELIMOUT;
 #print the those sequences that matched
 my %proposed_elements = genometohash($config{potele});
 foreach my $key (keys %element_names) {
+print "ha\n";
 	print OUTPUT ">$key\n";
 	print OUTPUT "$proposed_elements{$key}\n";
 }
@@ -154,9 +155,9 @@ sub findmotifs {
 	
 	my $sequence_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # contains sequence to translate
 	my $translated_file = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # translated file
-	open (OUTPUT, ">$sequence_file") or die;
-	print OUTPUT ">temp\n";
-	print OUTPUT "$sequence\n";
+	open (OUTPUT2, ">$sequence_file") or die;
+	print OUTPUT2 ">temp\n";
+	print OUTPUT2 "$sequence\n";
 	`transeq $sequence_file $translated_file -frame=6 2>&1`; # translate the DNA into 6 frames
 	my $hmm_output = File::Temp->new( UNLINK => 1, SUFFIX => '.fas' ); # translated file
 	`hmmscan --tblout $hmm_output $pfamREPET $translated_file`;
@@ -167,8 +168,5 @@ sub findmotifs {
 		`cp $hmm_output motif_files/$output_file`;
 	}
 	return($number_of_hits);
-
-
-
 }
 
